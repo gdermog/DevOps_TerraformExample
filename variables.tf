@@ -14,7 +14,7 @@ variable "name_prefix" {
 variable "environment" {
   description = "Prostředí pro tagy"
   type        = string
-  default     = "dev"
+  default     = "dev-module"
 }
 
 variable "course_name" {

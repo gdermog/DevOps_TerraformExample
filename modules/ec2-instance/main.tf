@@ -5,12 +5,12 @@ provider "aws" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
-  public_key = var.public_key
+  public_key = var.mod_public_key
 }
 
 # Security group pro SSH přístup
 resource "aws_security_group" "ec2_sg" {
-  name        = "${var.name_prefix}-sg"
+  name        = "${var.mod_name_prefix}-sg"
   description = "Security group pro EC2 instanci s SSH pristupem"
 
   ingress {
@@ -39,9 +39,9 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name        = "${var.name_prefix}-sg"
-    Environment = var.environment
-    Course      = var.course_name
+    Name        = "${var.mod_name_prefix}-sg"
+    Environment = var.mod_environment
+    Course      = var.mod_course_name
   }
 }
 
@@ -51,19 +51,14 @@ resource "aws_instance" "web" {
   key_name      = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
-  user_data = <<-EOF
-    #!/bin/bash
-    yum update -y
-    yum install -y httpd
-    systemctl start httpd
-    systemctl enable httpd
-    echo "<html><body><h1>Terraform EC2 Instance</h1><p>Vytvořeno pomocí Terraform pro ${var.course_name}</p></body></html>" > /var/www/html/index.html
-  EOF
+  user_data = var.mod_user_data
   
-  tags = {
-    Name = "HelloWorld"
-    Environment = var.environment
-	Course = var.course_name
-  }
+  tags = merge({
+    Name = "HelloWorldModule"
+    Environment = var.mod_environment
+	Course = var.mod_course_name
+   },
+   var.mod_additional_tags
+  )
 }
 
